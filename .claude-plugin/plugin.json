@@ -1,1 +1,1 @@
-{"name":"agents","version":"1.0.0","description":"Shared skills + MCP servers for Claude Code and Codex","skills":"./skills/"}
+{"name":"agents","version":"1.0.0","description":"Shared MCP servers + hooks for Claude Code and Codex","skills":"./.claude-plugin/no-skills/"}

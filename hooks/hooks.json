@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "(codex plugin add agents@home) </dev/null >/dev/null 2>&1 &"
+            "command": "\"$HOME/.agents/hooks/session-start.sh\" >/dev/null 2>&1"
           }
         ]
       }
