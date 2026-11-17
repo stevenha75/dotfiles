@@ -25,6 +25,7 @@ HEROKU_AC_ZSH_SETUP_PATH=/Users/stevenha/Library/Caches/heroku/autocomplete/zsh_
 # A unique zsh path array prevents tools from appending duplicate entries.
 typeset -U path PATH
 path=(
+  "$HOME/.agents/bin"  # gh account routing; also in .zprofile for login-only shells
   "$HOME/.antigravity/antigravity/bin"
   "$HOME/.local/bin"
   "$HOME/.npm-global/bin"
