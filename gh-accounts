@@ -1,0 +1,7 @@
+# GitHub owner -> gh account. Used by bin/gh and bin/git-credential-github.
+# Owners not listed use whichever account `gh auth switch` made active.
+stevenha75       stevenha75
+W4118            stevenha75
+Hack4Impact-UMD  stevenha75
+steven-marten    steven-marten
+mar10tech        steven-marten

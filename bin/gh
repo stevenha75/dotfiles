@@ -1,0 +1,43 @@
+#!/bin/sh
+# gh wrapper: runs gh as the account mapped to the target repo's owner (~/.agents/gh-accounts).
+# Owner comes from -R/--repo, a GitHub URL or repos|orgs/<owner> arg, or the cwd's git remote.
+here=$(cd "$(dirname "$0")" && pwd)
+real=
+IFS=:; for d in $PATH; do
+  [ "$(cd "$d" 2>/dev/null && pwd)" = "$here" ] && continue
+  [ -x "$d/gh" ] && { real="$d/gh"; break; }
+done; unset IFS
+[ -n "$real" ] || { echo "gh wrapper: real gh not found on PATH" >&2; exit 127; }
+
+# Explicit tokens and `gh auth ...` are left alone.
+if [ -n "${GH_TOKEN:-}${GITHUB_TOKEN:-}" ] || [ "${1:-}" = auth ]; then exec "$real" "$@"; fi
+
+owner=; prev=
+for a in "$@"; do
+  case "$prev" in -R|--repo) owner=${a%%/*}; break;; esac
+  case "$a" in
+    --repo=*) a=${a#--repo=}; owner=${a%%/*}; break;;
+    -R?*) a=${a#-R}; owner=${a%%/*}; break;;
+    *github.com[:/]*/*)  # github.com/<owner>/... or api.github.com/repos/<owner>/...
+      a=${a#*github.com[:/]}
+      case "$a" in repos/*|orgs/*|users/*) a=${a#*/};; esac
+      owner=${a%%/*}; break;;
+    repos/*/*|/repos/*/*|orgs/*|/orgs/*) a=${a#/}; a=${a#*/}; owner=${a%%/*}; break;;
+  esac
+  prev=$a
+done
+# `gh repo <view|clone|create|...> owner/name`
+if [ -z "$owner" ] && [ "${1:-}" = repo ]; then
+  case "${3:-}" in -*|"") ;; */*) owner=${3%%/*};; esac
+fi
+if [ -z "$owner" ]; then
+  url=$(git remote get-url origin 2>/dev/null) && case "$url" in
+    *github.com[:/]*/*) url=${url#*github.com[:/]}; owner=${url%%/*};;
+  esac
+fi
+
+acct=$("$here/gh-account-for" "$owner")
+if [ -n "$acct" ] && tok=$("$real" auth token --user "$acct" 2>/dev/null); then
+  GH_TOKEN=$tok exec "$real" "$@"
+fi
+exec "$real" "$@"

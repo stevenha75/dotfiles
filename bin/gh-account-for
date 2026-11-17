@@ -1,0 +1,4 @@
+#!/bin/sh
+# Print the gh account mapped to a GitHub owner in ~/.agents/gh-accounts (case-insensitive).
+[ -n "${1:-}" ] || exit 0
+awk -v o="$1" '!/^#/ && tolower($1) == tolower(o) { print $2; exit }' "$(dirname "$0")/../gh-accounts"

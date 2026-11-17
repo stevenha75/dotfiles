@@ -8,7 +8,8 @@
 	email = 109867418+stevenha75@users.noreply.github.com
 [credential "https://github.com"]
 	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper = !\"$HOME/.agents/bin/git-credential-github\"
+	useHttpPath = true
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
@@ -21,4 +22,8 @@
 [credential "https://git.heroku.com"]
 	helper = !heroku git:credentials
 [includeIf "gitdir:~/code/mar10tech/"]
+	path = /Users/stevenha/.gitconfig-mar10tech
+[includeIf "hasconfig:remote.*.url:https://github.com/mar10tech/**"]
+	path = /Users/stevenha/.gitconfig-mar10tech
+[includeIf "hasconfig:remote.*.url:git@github.com:mar10tech/**"]
 	path = /Users/stevenha/.gitconfig-mar10tech

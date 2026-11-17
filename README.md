@@ -26,3 +26,21 @@ Plumbing: `.claude-plugin/` (Claude plugin + marketplace), `.codex-plugin/`
 (Codex plugin), `plugins/marketplace.json` (Codex auto-discovers it as `home`).
 Both plugin manifests point `skills` at an empty dir so skills don't double-load.
 Don't put secrets in `.mcp.json` (it's in git); reference env vars instead.
+
+## GitHub accounts
+
+`gh-accounts` maps GitHub owners to `gh` accounts (personal vs work). Unlisted
+owners use the active account (`gh auth switch`). Two scripts read it:
+
+- `bin/gh` (first on PATH via `.zprofile`): runs `gh` as the account for the
+  owner in `-R`/`--repo`, a GitHub URL, `repos|orgs/<owner>`, or the cwd's remote.
+- `bin/git-credential-github` (`.gitconfig`): same for `git` push/pull/clone.
+
+Commit identity: `.gitconfig-mar10tech` applies to repos under
+`~/code/mar10tech/` or with a `mar10tech` remote.
+
+## Updating tstack
+
+`bin/tstack-update` merges upstream github.com/t3dotgg/tstack into `skills/`,
+keeping local edits (3-way), and stages it for review. `skills/.tstack-rev`
+records the upstream commit last merged.

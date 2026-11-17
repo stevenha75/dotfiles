@@ -1,0 +1,21 @@
+#!/bin/sh
+# Merge upstream tstack (github.com/t3dotgg/tstack) changes into ~/.agents/skills.
+# 3-way merge: your local edits are kept; real conflicts are left as conflict markers.
+# Changes are staged, not committed. Review with `git -C ~/.agents diff --cached`.
+set -eu
+cd "$(dirname "$0")/.."
+rev_file=skills/.tstack-rev
+old=$(cat "$rev_file")
+git fetch -q https://github.com/t3dotgg/tstack main
+new=$(git rev-parse FETCH_HEAD)
+if [ "$old" = "$new" ]; then echo "tstack: up to date ($(git rev-parse --short "$new"))"; exit 0; fi
+status=0
+if ! git diff --quiet "$old" "$new" -- skills/; then
+  git diff --binary "$old" "$new" -- skills/ | git apply -3 --index || status=$?
+fi
+echo "$new" > "$rev_file"; git add "$rev_file"
+git log --oneline "$old..$new" -- skills/
+if [ "$status" -ne 0 ]; then
+  echo "tstack: conflicts above. Fix the markers, then commit." >&2; exit 1
+fi
+echo "tstack: staged. Review with: git -C ~/.agents diff --cached"
