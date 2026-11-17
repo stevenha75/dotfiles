@@ -9,6 +9,10 @@ Edit files here, nowhere else. No sync step.
 | `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                |
 | `hooks/hooks.json` | plugin `agents@home`                    | plugin `agents@home`                       |
 
+`home/` holds hand-written dotfiles (zsh, git), each symlinked to the same
+path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
+(`~/.claude/settings.json`, `~/.codex/config.toml`) stay unmanaged.
+
 `hooks/session-start.sh` runs at every session start in both tools: links new
 skills into `~/.claude/skills` (plain names, no `agents:` prefix), prunes links
 to deleted ones, and runs `codex plugin add agents@home` in the background so
