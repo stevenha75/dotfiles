@@ -9,3 +9,14 @@
   - Review your own diff.
   - Prefer existing tests; add coverage only for meaningful gaps.
   - UI changes: take screenshots and look at them.
+
+## Dev tooling (Marten)
+
+- Prefer CLIs over MCP when both exist: `gh` (org `mar10tech`), `aws`,
+  `terraform`, `pnpm wrangler`, `docker compose`. MCP: Linear for issues,
+  `aws-knowledge` for current AWS/Terraform docs.
+- AWS: always pass an explicit `--profile` from `~/.aws/config` (SSO; run
+  `aws sso login --sso-session Marten` if expired). Default to `*-dev` profiles.
+- Ask before any prod access: never use a `*-prod` profile,
+  `AdministratorAccess`, or `terraform apply` with `prod.tfvars` without
+  explicit approval for that specific action.
