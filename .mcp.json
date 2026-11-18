@@ -7,6 +7,13 @@
     "aws-knowledge": {
       "type": "http",
       "url": "https://knowledge-mcp.global.api.aws"
+    },
+    "playwright": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "exec \"$HOME/.agents/bin/playwright-mcp\""
+      ]
     }
   }
 }

@@ -1,0 +1,10 @@
+#!/bin/sh
+# Playwright MCP driving the user's main Brave profile through the Playwright extension.
+# The extension token (skips the per-connection approval) lives in the macOS Keychain, not git:
+#   security add-generic-password -U -a "$USER" -s playwright-mcp-extension-token -w '<token>'
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+if token=$(security find-generic-password -s playwright-mcp-extension-token -w 2>/dev/null); then
+  export PLAYWRIGHT_MCP_EXTENSION_TOKEN="$token"
+fi
+exec npx -y @playwright/mcp@0.0.85 --extension --output-dir "$HOME/.cache/playwright-mcp" \
+  --executable-path "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" "$@"
