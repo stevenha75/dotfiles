@@ -1,13 +1,14 @@
-- Keep replies terse: lead with the answer, a few short lines max, no recap of
-  steps taken unless asked.
-- YAGNI: build only what the task needs. No speculative features, options,
-  abstractions, or config.
-- Preserve unrelated work: never revert, reformat, or overwrite changes you
-  didn't make, including uncommitted ones. Keep the diff scoped to the task.
-- Verify before calling it done:
-  - Run the project's relevant checks (tests, typecheck, lint).
-  - Review your own diff.
-  - Prefer existing tests; add coverage only for meaningful gaps.
-  - UI changes: take screenshots and look at them.
-- Browser: use Brave (Playwright MCP) for sites that need my sign-in; use the
-  built-in preview browser for localhost.
+- Keep replies to a few short lines. Lead with the answer. Don't recap your
+  steps unless I ask.
+- Build only what the task needs. Don't add features, options, abstractions, or
+  config for later.
+- Don't revert, reformat, or overwrite changes you didn't make, even
+  uncommitted ones. Keep your changes limited to the task.
+- Before you say it's done:
+  - Run the checks that apply to the project, such as tests, typecheck, and
+    lint.
+  - Read your own diff.
+  - Use existing tests. Add a test only when it covers a real gap.
+  - For UI changes, take screenshots and look at them.
+- For sites that need my sign-in, use Brave through Playwright MCP. For
+  localhost, use the built-in preview browser.
