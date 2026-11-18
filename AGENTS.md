@@ -9,3 +9,5 @@
   - Review your own diff.
   - Prefer existing tests; add coverage only for meaningful gaps.
   - UI changes: take screenshots and look at them.
+- Browser: use Brave (Playwright MCP) for sites that need my sign-in; use the
+  built-in preview browser for localhost.
