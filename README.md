@@ -27,6 +27,15 @@ Plumbing: `.claude-plugin/` (Claude plugin + marketplace), `.codex-plugin/`
 Both plugin manifests point `skills` at an empty dir so skills don't double-load.
 Don't put secrets in `.mcp.json` (it's in git); reference env vars instead.
 
+## Browser (Playwright MCP)
+
+`playwright` in `.mcp.json` runs `bin/playwright-mcp`, which drives the main Brave
+profile through the [Playwright extension](https://chromewebstore.google.com/detail/playwright-extension/mmlmfjhmonkocbjadbfplnigmagldckm),
+so agents reuse your logins and passkeys. Each client gets its own tab group. The
+extension token that skips the approval dialog is in the Keychain
+(`playwright-mcp-extension-token`); after rotating it in the extension, re-run the
+`security add-generic-password` line in `bin/playwright-mcp`.
+
 ## GitHub accounts
 
 `gh-accounts` maps GitHub owners to `gh` accounts (personal vs work). Unlisted
