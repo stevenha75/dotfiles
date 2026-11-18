@@ -3,7 +3,7 @@
 Edit files here, nowhere else. No sync step.
 
 YAGNI: a file or setting lives here only while something on this Mac uses it.
-Remove it when that stops, so the config never describes tools that are gone.
+Remove it when that stops, so the config only describes what is in use.
 
 | File               | Codex                                   | Claude Code                                |
 |--------------------|-----------------------------------------|--------------------------------------------|
