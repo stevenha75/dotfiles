@@ -55,4 +55,5 @@ Commit identity: `.gitconfig-mar10tech` applies to repos under
 
 tstack and other shared skills live in github.com/mar10tech/agent-kit, installed
 as plugin `mar10@mar10tech` in both tools (Claude shows them as `mar10:<skill>`).
-`skills/` here is for personal skills only.
+`skills/` here is for personal skills only. `disabled-skills/` holds personal
+skills that are turned off; move one into `skills/` to turn it on.
