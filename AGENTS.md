@@ -43,6 +43,11 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 
 - Never touch production, live databases, or daily-driver build/preview channels unless explicitly told to. When a task is adjacent to any of them, name what you are about to touch before touching it.
 
+## Browser
+
+- For sites that need my sign-in, use Brave through Playwright MCP.
+- For localhost, use the built-in preview browser.
+
 ## Pull Requests
 
 - Make sure titles follow conventions from the repo. They should be simple and easy to understand. Conventional commit styles in projects that use them, i.e. "fix(web): new threads no longer spike CPU"
