@@ -51,8 +51,8 @@ owners use the active account (`gh auth switch`). Two scripts read it:
 Commit identity: `.gitconfig-mar10tech` applies to repos under
 `~/code/mar10tech/` or with a `mar10tech` remote.
 
-## Updating tstack
+## Team skills
 
-`bin/tstack-update` merges upstream github.com/t3dotgg/tstack into `skills/`,
-keeping local edits (3-way), and stages it for review. `skills/.tstack-rev`
-records the upstream commit last merged.
+tstack and other shared skills live in github.com/mar10tech/agent-kit, installed
+as plugin `mar10@mar10tech` in both tools (Claude shows them as `mar10:<skill>`).
+`skills/` here is for personal skills only.
