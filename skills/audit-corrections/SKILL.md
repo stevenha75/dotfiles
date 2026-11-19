@@ -10,12 +10,12 @@ instruction changes that steer away from those mistakes.
 
 Read session history on this machine: Claude Code transcripts under
 `~/.claude/projects/`, and Codex sessions under both `~/.codex/sessions/` and
-`~/.codex/archived_sessions/`. Filter by message timestamp. If the user names
-a time window, models, or repos, stay inside them. Otherwise use the last 30
-days.
+`~/.codex/archived_sessions/`. Keep messages from the window the user names,
+or the last 30 days, by message timestamp. Stay inside any models or repos
+they name.
 
-Count only messages the user typed. Tool results and prompts from a parent
-agent are also stored as user messages; skip them.
+Count only messages the user typed. Tool results and parent-agent prompts are
+also stored as user messages; skip them.
 
 A correction is a user message that pushes back on the agent's last turn:
 "no", "that's wrong", "why did you...", "stop", "you missed...". A repeated
