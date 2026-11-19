@@ -1,6 +1,6 @@
 ---
 name: marten-docs
-description: Use for Marten internal docs - Raven/Flavigula design, AWS permissions, dev setup, onboarding.
+description: Use when the user mentions Marten docs, Raven, Flavigula, Marten AWS permissions, Marten dev setup, or Marten onboarding.
 ---
 
 Read the pages you need under `~/code/mar10tech/docs/src/content/docs/`. First
