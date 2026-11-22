@@ -8,7 +8,6 @@ Remove it when that stops, so the config only describes what is in use.
 | File               | Codex                                   | Claude Code                                |
 |--------------------|-----------------------------------------|--------------------------------------------|
 | `AGENTS.md`        | `~/.codex/AGENTS.md` symlink (live)     | `~/.claude/CLAUDE.md` symlink (live)       |
-| `skills/`          | native user-skills dir (live)           | `~/.claude/skills/<name>` symlinks, created by the hook |
 | `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                |
 | `hooks/hooks.json` | plugin `agents@home`                    | plugin `agents@home`                       |
 
@@ -16,11 +15,10 @@ Remove it when that stops, so the config only describes what is in use.
 path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
 (`~/.claude/settings.json`, `~/.codex/config.toml`) stay unmanaged.
 
-`hooks/session-start.sh` runs at every session start in both tools: links new
-skills into `~/.claude/skills` (plain names, no `agents:` prefix), prunes links
-to deleted ones, and runs `codex plugin add agents@home` in the background so
-Codex's cached plugin copy picks up `.mcp.json` edits. Net effect: any change
-reaches both tools by the next session.
+`hooks/session-start.sh` runs at every session start in both tools and, in the
+background, refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
+and updates `mar10@mar10tech` in both tools to agent-kit `main`. Net effect: any
+change here or merged to agent-kit reaches both tools by the next session.
 
 Editing `hooks/hooks.json` changes its hash, so Codex asks for re-trust: run
 `codex` in a terminal → Review hooks → `t`.
@@ -55,5 +53,5 @@ Commit identity: `.gitconfig-mar10tech` applies to repos under
 
 tstack and other shared skills live in github.com/mar10tech/agent-kit, installed
 as plugin `mar10@mar10tech` in both tools (Claude shows them as `mar10:<skill>`).
-`skills/` here is for personal skills only. `disabled-skills/` holds personal
-skills that are turned off; move one into `skills/` to turn it on.
+`disabled-skills/` holds personal skills that are turned off. Nothing loads
+personal skills right now; turning one on means wiring `skills/` back up.
