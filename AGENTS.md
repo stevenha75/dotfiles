@@ -25,7 +25,7 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 
 ## Replies
 
-- Lead with the short answer. Your first line is the tldr: what happened, or what's true. Details come after, and only if they earn their spot. If I have to type "tldr", you buried it.
+- Lead with the answer: what happened, or what's true, in a line or two. Add detail only when it changes what I do next, or when I ask for it.
 
 ## Questions are read-only
 
