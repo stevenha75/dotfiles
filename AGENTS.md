@@ -23,6 +23,10 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 - If not already specified in project, I generally like to use the following tech: Convex, Tailwind, React, Vite, pnpm
 - When building more complex web and react native apps, I like to pull in Zustand, React Query, Tanstack Start, Clerk (or better-auth if selfhosting), and ArkType (or zod if perf isn't an issue)
 
+## Replies
+
+- Lead with the short answer. Your first line is the tldr: what happened, or what's true. Details come after, and only if they earn their spot. If I have to type "tldr", you buried it.
+
 ## Questions are read-only
 
 - A question is a request for an answer, not for changes. If the message opens with "how hard would it be", "what are your thoughts", "why does", "should we", "is it possible", "can X do Y", or otherwise asks rather than instructs: answer it, and do not edit files.
@@ -55,5 +59,5 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 - Add a blurb to the end of the PR description about what model and harness is making the changes.
 - **Open a real PR, not a draft.** Drafts do not get review-bot coverage.
 - **Rebase onto latest `main` before opening.** Stale branches conflict and waste a review round.
-- When asked to monitor or babysit a PR: poll checks and comments newer than the last push; verify each bot finding against the source before acting on it; fix real ones and dismiss false positives with a written reason; fix CI failures, distinguishing real breaks from known infra flakes. If nothing is new, stay quiet — do not post filler comments. Stop when the repo's review bots are green on the latest commit.
+- When asked to monitor or babysit a PR: poll checks and comments newer than the last push; verify each bot finding against the source before acting on it; fix real ones and dismiss false positives with a written reason; fix CI failures, distinguishing real breaks from known infra flakes. If nothing is new, stay quiet. Do not post filler comments. Stop when the repo's review bots are green on the latest commit.
 - Merge only per the disposition given in the request (merge when green, or stop and report). If none was given, report and ask.
