@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "slack": {
+      "serverUrl": "https://mcp.slack.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SLACK_USER_TOKEN}"
+      },
+      "variables": [
+        {
+          "name": "SLACK_USER_TOKEN",
+          "title": "Slack user token",
+          "description": "User token from the Antigravity (Steven) Slack app's MCP OAuth flow; see the Slack section of ~/.agents/README.md"
+        }
+      ]
+    }
+  }
+}
