@@ -1,15 +1,27 @@
-# ~/.agents: one source of truth for Codex + Claude Code
+# ~/.agents: one source of truth for Codex, Claude Code, and Antigravity CLI
 
 Edit files here, nowhere else. No sync step.
 
 YAGNI: a file or setting lives here only while something on this Mac uses it.
 Remove it when that stops, so the config only describes what is in use.
 
-| File               | Codex                                   | Claude Code                                |
-|--------------------|-----------------------------------------|--------------------------------------------|
-| `AGENTS.md`        | `~/.codex/AGENTS.md` symlink (live)     | `~/.claude/CLAUDE.md` symlink (live)       |
-| `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                |
-| `hooks/hooks.json` | plugin `agents@home`                    | plugin `agents@home`                       |
+| File               | Codex                                   | Claude Code                                | Antigravity CLI (`agy`)                          |
+|--------------------|-----------------------------------------|--------------------------------------------|--------------------------------------------------|
+| `AGENTS.md`        | `~/.codex/AGENTS.md` symlink (live)     | `~/.claude/CLAUDE.md` symlink (live)       | `~/.gemini/AGENTS.md` symlink (live)             |
+| `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                | `~/.gemini/config/mcp_config.json` symlink (live) |
+| `hooks/hooks.json` | plugin `agents@home`                    | plugin `agents@home`                       | not wired                                        |
+
+`agy` has no plugin marketplace for agent-kit, so `~/.gemini/config/skills` is a
+symlink to Claude Code's checkout of it
+(`~/.claude/plugins/marketplaces/mar10tech/skills`), kept current by the Claude
+hook below. Its billing project and default model live in
+`~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged).
+
+T3 Code runs `agy acp` with a private `GEMINI_HOME` under
+`~/.t3/userdata/providers/antigravity/<hash>/`. T3 links the skills in itself;
+`AGENTS.md` there is a hand-made symlink to this repo's `AGENTS.md`. Recreate
+it if T3 rebuilds the profile. T3 sessions do not read `.mcp.json`; that
+profile has its own MCP config.
 
 `home/` holds hand-written dotfiles (zsh, git), each symlinked to the same
 path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
