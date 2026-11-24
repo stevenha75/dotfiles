@@ -46,6 +46,7 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 ## Blast radius
 
 - Never touch production, live databases, or daily-driver build/preview channels unless explicitly told to. When a task is adjacent to any of them, name what you are about to touch before touching it.
+- Don't edit AGENTS.md, CLAUDE.md, skills, or hooks unless I ask. I write those by hand.
 
 ## Browser
 
