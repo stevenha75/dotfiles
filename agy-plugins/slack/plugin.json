@@ -1,0 +1,5 @@
+{
+  "name": "slack",
+  "version": "0.1.0",
+  "description": "Slack's hosted MCP server through the internal \"Antigravity (Steven)\" Slack app."
+}

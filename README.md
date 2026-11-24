@@ -17,6 +17,24 @@ symlink to Claude Code's checkout of it
 hook below. Its billing project and default model live in
 `~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged).
 
+Slack: Claude Code uses its claude.ai connector. `agy` gets Slack's hosted MCP
+server from the plugin in `agy-plugins/slack`, backed by the internal Slack app
+"Antigravity (Steven)". agy 1.5.14 got `Unauthorized` from Slack without ever
+offering its own OAuth sign-in (likely because Slack's resource metadata names
+`https://mcp.slack.com`, not `/mcp`), so the plugin sends a user token instead.
+Get one by authorizing the app through `https://slack.com/oauth/v2_user/authorize`
+with its `client_id`, its user scopes as `scope`, a PKCE challenge, and redirect
+`https://antigravity.google/oauth-callback`. Exchange the code at
+`oauth.v2.user.access` with the PKCE verifier and the client secret from the
+app's Basic Information page. Then `agy plugin install
+~/.agents/agy-plugins/slack` and paste the token in `/plugin`. The install is a
+copy, so re-run it after editing the plugin. agy keeps the token in
+`~/.gemini/config/config.json`, outside git. It never expires and can post as
+you: if it leaks, call `auth.revoke` with it (or remove the app) and redo the
+flow. The Gemini Enterprise MCP allowlist must list `slack_slack` →
+`https://mcp.slack.com/mcp`. This covers terminal `agy` only; T3's private
+profile has no Slack.
+
 T3 Code runs `agy acp` with a private `GEMINI_HOME` under
 `~/.t3/userdata/providers/antigravity/<hash>/`. T3 links the skills in itself;
 `AGENTS.md` there is a hand-made symlink to this repo's `AGENTS.md`. Recreate
