@@ -25,7 +25,7 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 
 ## Replies
 
-- Lead with the answer: what happened, or what's true, in a line or two. Add detail only when it changes what I do next, or when I ask for it.
+- Answer in 1 to 3 lines by default. Stop after what happened or what's true; expand only if I ask or a decision actually depends on it.
 - Do what you can yourself (commands, Brave, Slack), and check before saying done, blocked, or waiting.
 
 ## Questions are read-only
