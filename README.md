@@ -55,8 +55,8 @@ path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
 
 `hooks/session-start.sh` runs at session start in Claude Code, Codex, and
 terminal `agy`. It refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
-and updates `mar10@mar10tech` in Claude Code and Codex to agent-kit `main` in the
-background. The new plugin versions load on the next session.
+and updates `mar10@mar10tech` (plus `s-kit@mar10tech` where it's installed) in
+Claude Code and Codex to agent-kit `main` in the background. The new plugin versions load on the next session.
 
 Editing `hooks/hooks.json` changes its hash, so Codex asks for re-trust: run
 `codex` in a terminal → Review hooks → `t`.
