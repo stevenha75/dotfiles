@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs at session start in both Claude Code and Codex (via plugin agents@home).
+# Runs at session start in Claude Code, Codex, and terminal agy.
 # Refreshes installed plugins in the background; changes load next session.
 (
   # Codex's cached copy of this repo's plugin (picks up .mcp.json edits).
