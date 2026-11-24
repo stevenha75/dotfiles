@@ -1,0 +1,9 @@
+{
+  "refresh-agent-plugins": {
+    "SessionStart": [
+      {
+        "command": "\"$HOME/.agents/hooks/session-start.sh\" && printf '{}\\n'"
+      }
+    ]
+  }
+}

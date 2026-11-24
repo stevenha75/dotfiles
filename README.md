@@ -9,12 +9,12 @@ Remove it when that stops, so the config only describes what is in use.
 |--------------------|-----------------------------------------|--------------------------------------------|--------------------------------------------------|
 | `AGENTS.md`        | `~/.codex/AGENTS.md` symlink (live)     | `~/.claude/CLAUDE.md` symlink (live)       | `~/.gemini/AGENTS.md` symlink (live)             |
 | `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                | `~/.gemini/config/mcp_config.json` symlink (live) |
-| `hooks/hooks.json` | plugin `agents@home`                    | plugin `agents@home`                       | not wired                                        |
+| Session refresh    | `hooks/hooks.json` via `agents@home`      | `hooks/hooks.json` via `agents@home`         | `~/.gemini/config/hooks.json` → `hooks/antigravity.json` (terminal) |
 
-`agy` has no plugin marketplace for agent-kit, so `~/.gemini/config/skills` is a
-symlink to Claude Code's checkout of it
-(`~/.claude/plugins/marketplaces/mar10tech/skills`), kept current by the Claude
-hook below. Its billing project and default model live in
+`agy` has no plugin marketplace for agent-kit, so `~/.gemini/config/skills` links to
+Claude Code's checkout (`~/.claude/plugins/marketplaces/mar10tech/skills`).
+The terminal session hook runs the same refresh as Claude Code and Codex.
+Antigravity billing and the default model live in
 `~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged).
 
 Slack: Claude Code uses its claude.ai connector. `agy` gets Slack's hosted MCP
@@ -32,23 +32,31 @@ copy, so re-run it after editing the plugin. agy keeps the token in
 `~/.gemini/config/config.json`, outside git. It never expires and can post as
 you: if it leaks, call `auth.revoke` with it (or remove the app) and redo the
 flow. The Gemini Enterprise MCP allowlist must list `slack_slack` →
-`https://mcp.slack.com/mcp`. This covers terminal `agy` only; T3's private
-profile has no Slack.
+`https://mcp.slack.com/mcp`.
 
-T3 Code runs `agy acp` with a private `GEMINI_HOME` under
-`~/.t3/userdata/providers/antigravity/<hash>/`. T3 links the skills in itself;
-`AGENTS.md` there is a hand-made symlink to this repo's `AGENTS.md`. Recreate
-it if T3 rebuilds the profile. T3 sessions do not read `.mcp.json`; that
-profile has its own MCP config.
+T3 Code runs `agy acp` with a private `--gemini-dir` under
+`~/.t3/userdata/providers/antigravity/<hash>/`. The profile links to the shared
+rules and skills. If T3 rebuilds it, check that `AGENTS.md` and `config/skills`
+link to their counterparts in `~/.gemini`. Link `config/mcp_config.json` to `~/.agents/.mcp.json` (replacing only the
+empty generated file). Copy the installed `config/plugins/slack` directory from
+`~/.gemini` and merge just the `plugins.slack` entry into the private
+`config/config.json`, keeping both config files private. Refresh the private
+Slack copy after reinstalling the plugin or rotating its token. Linear needs
+its own OAuth sign-in for each profile. ACP 1.5.14 did not run the terminal
+session hook in testing, so T3 picks up skill updates from the shared checkout.
+
+Claude's hosted connectors have their own authorization. Native Gmail,
+Calendar, Drive, Docs, and Sheets on Gemini Enterprise need approved MCP
+endpoints and Google Workspace OAuth setup.
 
 `home/` holds hand-written dotfiles (zsh, git), each symlinked to the same
 path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
 (`~/.claude/settings.json`, `~/.codex/config.toml`) stay unmanaged.
 
-`hooks/session-start.sh` runs at every session start in both tools and, in the
-background, refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
-and updates `mar10@mar10tech` in both tools to agent-kit `main`. Net effect: any
-change here or merged to agent-kit reaches both tools by the next session.
+`hooks/session-start.sh` runs at session start in Claude Code, Codex, and
+terminal `agy`. It refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
+and updates `mar10@mar10tech` in Claude Code and Codex to agent-kit `main` in the
+background. The new plugin versions load on the next session.
 
 Editing `hooks/hooks.json` changes its hash, so Codex asks for re-trust: run
 `codex` in a terminal → Review hooks → `t`.
