@@ -26,6 +26,7 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 ## Replies
 
 - Lead with the answer: what happened, or what's true, in a line or two. Add detail only when it changes what I do next, or when I ask for it.
+- Do what you can yourself (commands, Brave, Slack), and check before saying done, blocked, or waiting.
 
 ## Questions are read-only
 
