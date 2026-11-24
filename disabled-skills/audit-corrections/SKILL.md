@@ -1,12 +1,12 @@
 ---
 name: audit-corrections
-description: Use when the user asks to audit their agent history, find the mistakes agents keep making, or turn past corrections into AGENTS.md rules.
+description: Use when the user asks to audit their agent history, find the mistakes agents keep making, or turn past corrections into checks, skill edits, or AGENTS.md rules.
 ---
 
 # Audit corrections
 
-Find where agents went wrong in the user's own sessions, and propose
-instruction changes that steer away from those mistakes.
+Find where agents went wrong in the user's own sessions, and propose the
+change that stops each repeat at the strongest rung that will hold it.
 
 Read session history on this machine: Claude Code transcripts under
 `~/.claude/projects/`, and Codex sessions under both `~/.codex/sessions/` and
@@ -41,15 +41,50 @@ For lots of history, split it across subagents by harness or date range, and
 give each one the same taxonomy. Count tool-call facts (kill commands, draft
 PRs) from the transcripts directly instead of from classifier judgment.
 
+## Reflect
+
+Before proposing anything, route each repeat issue to the file or check that
+already owns that behavior. Prefer editing that home over adding a new one.
+Check whether earlier fixes held: compare this window's rate for each mode
+against the window before the fix landed. A fix that didn't move its rate
+climbs a rung.
+
+## Rungs
+
+Fix each repeat at the strongest rung that will hold it:
+
+1. Types, CI, or hooks. Anything a machine can check: a type, a CI step, a
+   hook in `~/.agents/hooks/`. Name the exact check and where it runs.
+2. Skill. A bad/good example pair taken from the real transcript, plus a stop
+   point ("stop and ask before X"). Only if the prose rules from ENG-4 and
+   dotfiles#22 didn't move their rates.
+3. `~/.agents/AGENTS.md` prose, in the file's existing voice.
+
+When a rung-1 check now enforces a rule, propose deleting its prose.
+
+## Conditional checks
+
+Run each only if its trigger has fired:
+
+- flavigula CI `verify.yaml`: only if ENG-2 has landed. Count repeats it
+  should have caught.
+- `#eng-alerts` auto-repro: only if `#eng-alerts` posted in the window. Try to
+  reproduce each alert and count a confirmed agent-caused one as a correction.
+- Skill evals: only if a core skill drifted (repeats tied to a skill that was
+  followed as written). Propose an eval case from the transcript.
+- Antigravity and Neon transcripts: only if Neon has meaningful volume. Add
+  them to the sources above.
+
+## Report
+
 Report as one HTML page:
 
 1. A table of corrections per 100 user messages, failure mode by model. Bold
    the model that owns each mode. Say which counts are directional.
-2. Proposed edits to `~/.agents/AGENTS.md`. For each edit, give the exact
-   rule text in the file's existing voice, and a "Why" line that quotes the
-   real corrections behind it. Prefer editing an existing section over adding
-   a new one. Skip any failure the file already prevents unless the data shows
-   the rule isn't holding.
+2. One proposal per repeat issue: its rung, the exact check, skill example,
+   or rule text, and a "Why" line that quotes the real corrections behind it.
+   Skip any failure already prevented unless the data shows the fix isn't
+   holding.
 
 Do not edit any instruction file. Report the page URL and stop. The user
-picks which edits to apply.
+picks which changes to apply.
