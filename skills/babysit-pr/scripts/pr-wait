@@ -58,9 +58,18 @@ import time
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, NoReturn
+from urllib.parse import quote
 
 GATING_BOTS = ("greptile", "macroscope")
 ADVISORY_BOTS = ("coderabbit",)
+REVIEW_BOT_LOGINS = {
+    "greptile-app": "greptile",
+    "greptile-apps": "greptile",
+    "greptileai": "greptile",
+    "macroscope-app": "macroscope",
+    "macroscopeapp": "macroscope",
+    "coderabbitai": "coderabbit",
+}
 # CI and deploy bots report through checks. Their PR comments are status reports.
 STATUS_BOTS = ("github-actions", "vercel", "netlify", "railway", "cloudflare")
 STATE_DIR = Path.home() / ".local" / "state" / "pr-wait"
@@ -79,18 +88,18 @@ FAILED = ("fail", "cancel")
 RANK = {"fail": 4, "cancel": 3, "pending": 2, "pass": 1, "skipping": 0}
 
 QUERY = """
-query($owner: String!, $name: String!, $number: Int!) {
+query($owner: String!, $name: String!, $number: Int!, $before: String) {
   viewer { login }
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
-      url state headRefOid baseRefName mergeStateStatus
+      url state headRefOid baseRefName baseRefOid mergeStateStatus
       author { login }
-      baseRef { target { oid } }
       comments(last: 100) { nodes { id url body author { login __typename } } }
       reviews(last: 100) {
         nodes { id url state body commit { oid } author { login __typename } }
       }
-      reviewThreads(last: 100) {
+      reviewThreads(last: 100, before: $before) {
+        pageInfo { hasPreviousPage startCursor }
         nodes {
           isResolved path line
           comments(first: 100) { nodes { id url body author { login __typename } } }
@@ -143,7 +152,7 @@ def gh_lines(args: list[str]) -> list[str]:
 
 
 def bot_name(text: str | None) -> str | None:
-    """Which review bot a login or check name belongs to, if any."""
+    """Which review bot owns a check name, if any."""
     lowered = (text or "").lower()
     return next((bot for bot in GATING_BOTS + ADVISORY_BOTS if bot in lowered), None)
 
@@ -151,6 +160,11 @@ def bot_name(text: str | None) -> str | None:
 def who(node: Json) -> tuple[str, bool]:
     author = node.get("author") or {}
     return author.get("login") or "ghost", author.get("__typename") == "Bot"
+
+
+def review_bot(node: Json) -> str | None:
+    login, is_bot = who(node)
+    return REVIEW_BOT_LOGINS.get(login.lower().removesuffix("[bot]")) if is_bot else None
 
 
 def plain(body: str) -> str:
@@ -228,21 +242,16 @@ def required_checks(repo: str, base: str) -> set[str]:
     """Required check names for the base branch, from rulesets and classic branch
     protection. Knowing them up front means a required check that has not started
     yet counts as pending, instead of green by omission."""
-    sources = (
-        (
-            f"repos/{repo}/rules/branches/{base}",
-            '.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context',
-        ),
-        (f"repos/{repo}/branches/{base}/protection/required_status_checks", ".contexts[]?, .checks[]?.context"),
-    )
-    names: set[str] = set()
-    for path, jq in sources:
-        try:
-            names.update(gh_lines(["api", path, "--jq", jq]))
-        except GhError as error:
-            if "HTTP 404" not in str(error):  # 404 means no protection, which is normal
-                log(f"could not read required checks from {path}: {error}")
-    return names
+    branch = quote(base, safe="")
+    rules = gh_lines([
+        "api", f"repos/{repo}/rules/branches/{branch}", "--jq",
+        '.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context',
+    ])
+    classic = gh_lines([
+        "api", f"repos/{repo}/branches/{branch}", "--jq",
+        ".protection.required_status_checks | .contexts[]?, .checks[]?.context",
+    ])
+    return set(rules + classic)
 
 
 class Watcher:
@@ -253,13 +262,15 @@ class Watcher:
         state = self.load()
         # First run for this PR: record what exists and report nothing.
         self.baseline = state is None
-        self.state: Json = state or {"reported": [], "summaries": {}, "base_oid": None, "merge_state": None}
+        self.state: Json = state or {
+            "reported": [], "summaries": {}, "base_ref": None, "base_oid": None, "merge_state": None,
+        }
         self.reported: set[str] = set(self.state["reported"])
         self.printed: set[str] = set()
         self.events = 0
         self.required: set[str] | None = None
-        self.prev_snapshot: list[tuple[str, str]] | None = None
-        self.pr_files: dict[str, set[str]] = {}
+        self.required_base: str | None = None
+        self.prev_snapshot: tuple[str, list[tuple[str, str]]] | None = None
 
     def load(self) -> Json | None:
         try:
@@ -295,15 +306,37 @@ class Watcher:
         self.save()
         sys.exit(code)
 
-    def fetch_pr(self) -> Json:
-        proc = gh([
+    def fetch_pr_page(self, before: str | None = None) -> Json:
+        args = [
             "api", "graphql", "-f", f"query={QUERY}",
             "-f", f"owner={self.owner}", "-f", f"name={self.name}", "-F", f"number={self.pr}",
-        ])
-        data = json.loads(proc.stdout)["data"]
+        ]
+        if before is not None:
+            args.extend(["-f", f"before={before}"])
+        data = json.loads(gh(args).stdout)["data"]
         pr = data["repository"]["pullRequest"]
         pr["viewer"] = data["viewer"]["login"]
         return pr
+
+    def fetch_pr(self) -> Json:
+        pr = self.fetch_pr_page()
+        if pr["state"] != "OPEN":
+            return pr
+        threads = pr["reviewThreads"]
+        nodes = threads["nodes"]
+        page = threads["pageInfo"]
+        while page["hasPreviousPage"]:
+            previous = self.fetch_pr_page(page["startCursor"])
+            if self.snapshot_key(previous) != self.snapshot_key(pr):
+                raise GhError("pull request changed while reading review threads", True)
+            earlier = previous["reviewThreads"]
+            nodes[:0] = earlier["nodes"]
+            page = earlier["pageInfo"]
+        return pr
+
+    @staticmethod
+    def snapshot_key(pr: Json) -> tuple[str, str, str, str]:
+        return pr["headRefOid"], pr["baseRefName"], pr["baseRefOid"], pr["state"]
 
     def fetch_checks(self) -> dict[str, Json]:
         # gh pr checks exits 8 while checks are pending and 1 when one failed.
@@ -320,16 +353,11 @@ class Watcher:
                 checks[row["name"]] = row
         return checks
 
-    def base_overlap(self, head: str, old: str, new: str) -> list[str]:
+    def base_overlap(self, old: str, new: str) -> list[str]:
         """Files this PR touches that the new base commits also touch."""
-        try:
-            if head not in self.pr_files:
-                self.pr_files[head] = set(gh_lines(["pr", "diff", str(self.pr), "-R", self.repo, "--name-only"]))
-            moved = gh_lines(["api", f"repos/{self.repo}/compare/{old}...{new}", "--jq", ".files[].filename"])
-        except GhError as error:
-            log(f"could not compare base commits: {error}")
-            return []
-        return sorted(self.pr_files[head].intersection(moved))
+        files = set(gh_lines(["pr", "diff", str(self.pr), "-R", self.repo, "--name-only"]))
+        moved = gh_lines(["api", f"repos/{self.repo}/compare/{old}...{new}", "--jq", ".files[].filename"])
+        return sorted(files.intersection(moved))
 
     def behind(self, base: str, base_oid: str | None, head: str) -> str:
         """How far the head is behind its base, for the green and ready lines."""
@@ -349,12 +377,26 @@ class Watcher:
             self.finish(1, [f"closed without merging: {pr['url']}"])
 
         base = pr["baseRefName"]
-        if self.required is None:
+        if self.required_base != base:
             self.required = required_checks(self.repo, base)
+            self.required_base = base
+            self.prev_snapshot = None
             gate = ", ".join(sorted(self.required)) or "none set, so every CI check gates"
             log(f"watching {self.repo}#{self.pr} until {self.until}; required checks: {gate}")
         checks = self.fetch_checks()
         head = pr["headRefOid"]
+        base_oid = pr["baseRefOid"]
+        old_base = self.state["base_oid"]
+        touched = []
+        if not self.baseline and self.state.get("base_ref") == base and base_oid and old_base and old_base != base_oid:
+            touched = self.base_overlap(old_base, base_oid)
+        # The checks and PR diff are live reads. Discard them if the PR changed
+        # before reporting events or advancing the poll state.
+        current = json.loads(gh([
+            "pr", "view", str(self.pr), "-R", self.repo, "--json", "headRefOid,baseRefName,baseRefOid,state",
+        ]).stdout)
+        if self.snapshot_key(current) != self.snapshot_key(pr):
+            raise GhError("pull request changed while reading checks or base overlap", True)
         short = head[:7]
         mine = {who(pr)[0], pr["viewer"]}
         comments = pr["comments"]["nodes"]
@@ -381,7 +423,7 @@ class Watcher:
         all_done = gate_done and all(c["bucket"] != "pending" for c in watched.values())
         # Checks appear a few seconds after a push. Two identical polls in a row
         # guard against calling a half-registered set of checks finished.
-        snapshot = sorted((name, c["bucket"]) for name, c in watched.items())
+        snapshot = (head, sorted((name, c["bucket"]) for name, c in watched.items()))
         stable = snapshot == self.prev_snapshot
         self.prev_snapshot = snapshot
         green = gate_done and stable and not fail_lines
@@ -389,7 +431,7 @@ class Watcher:
         # People and bots talking. Edits are never events.
         for comment in comments:
             login, is_bot = who(comment)
-            if login in mine or bot_name(login) or (is_bot and any(b in login for b in STATUS_BOTS)):
+            if login in mine or review_bot(comment) or (is_bot and any(b in login for b in STATUS_BOTS)):
                 continue
             self.emit(f"c:{comment['id']}", f"comment from {login}: {snippet(comment['body'])} {comment['url']}")
         for review in reviews:
@@ -412,18 +454,17 @@ class Watcher:
                 kind = "new thread" if index == 0 else "thread reply"
                 self.emit(f"c:{comment['id']}", f"{kind} from {login} on {where}: {snippet(comment['body'])} {comment['url']}")
 
-        # Review bots on the current head. A bot with checks is done when they
-        # finish. Otherwise it is done once it reviews the head commit or its
-        # summary names the head.
+        # Require a current-head review or successful review checks. For bots
+        # without checks, a trusted summary naming the head also counts.
         bot_status: dict[str, str] = {}
         reviewed: list[str] = []
         for bot in GATING_BOTS + ADVISORY_BOTS:
             own_checks = {name: c for name, c in checks.items() if bot_name(name) == bot}
-            summaries = [c for c in comments if bot_name(who(c)[0]) == bot]
-            own_reviews = [r for r in reviews if bot_name(who(r)[0]) == bot]
+            summaries = [c for c in comments if review_bot(c) == bot]
+            own_reviews = [r for r in reviews if review_bot(r) == bot]
             on_head = any((r.get("commit") or {}).get("oid") == head for r in own_reviews)
             if own_checks:
-                done = all(c["bucket"] != "pending" for c in own_checks.values())
+                done = on_head or all(c["bucket"] == "pass" for c in own_checks.values())
             else:
                 done = on_head or any(short in s["body"] for s in summaries)
             seen = bool(own_checks or summaries or own_reviews)
@@ -453,17 +494,14 @@ class Watcher:
                         self.emit(f"summary:{s['id']}:{new}", f"{bot} summary changed on {short}: {text} {s['url']}")
 
         # Base branch and merge state.
-        base_oid = ((pr.get("baseRef") or {}).get("target") or {}).get("oid")
-        old_base = self.state["base_oid"]
-        if base_oid and old_base and base_oid != old_base and not self.baseline:
-            touched = self.base_overlap(head, old_base, base_oid)
-            if touched:
-                more = f" and {len(touched) - 5} more" if len(touched) > 5 else ""
-                self.emit(
-                    f"base:{base_oid}",
-                    f"{base} moved to {base_oid[:7]} and touches files in this PR: {', '.join(touched[:5])}{more}",
-                )
-        if base_oid:
+        if base_oid and touched:
+            more = f" and {len(touched) - 5} more" if len(touched) > 5 else ""
+            self.emit(
+                f"base:{base}:{base_oid}",
+                f"{base} moved to {base_oid[:7]} and touches files in this PR: {', '.join(touched[:5])}{more}",
+            )
+        if base_oid or self.state.get("base_ref") != base:
+            self.state["base_ref"] = base
             self.state["base_oid"] = base_oid
         merge_state = pr["mergeStateStatus"]
         dirty_line = f"merge state is DIRTY: the branch conflicts with {base}, rebase it"

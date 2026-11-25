@@ -77,8 +77,8 @@ used up, the REST limit is separate and usually still has room. Use
 
 ## Reviews
 
-Only act on checks and comments newer than the latest push. Verify every bot
-finding against the source before changing code. Fix real findings and CI
+Use the current head’s check results. Revalidate unresolved review findings
+against that head even if they predate the last push. Fix real findings and CI
 failures, distinguish repository failures from infrastructure flakes, and reply
 with a written reason when dismissing false positives.
 
