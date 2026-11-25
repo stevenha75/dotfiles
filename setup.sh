@@ -81,7 +81,7 @@ link "$A/AGENTS.md" .codex/AGENTS.md
 link "$A/AGENTS.md" .gemini/AGENTS.md
 link "$A/.mcp.json" .gemini/config/mcp_config.json
 link "$A/hooks/antigravity.json" .gemini/config/hooks.json
-link "$HOME/.claude/plugins/marketplaces/mar10tech/skills" .gemini/config/skills
+link "$A/skills" .gemini/config/skills
 
 # App-written settings.
 printf '%s\n' "$APPS" | while read -r snap live; do
@@ -102,13 +102,11 @@ if ! sed '/^[[:space:]]*\[/q' "$cfg" | grep -qE '^[[:space:]]*model_verbosity[[:
   { echo 'model_verbosity = "low"'; cat "$cfg"; } > "$cfg.tmp" && mv "$cfg.tmp" "$cfg"
 fi
 
-# Plugins. The marketplaces are already declared in the restored settings;
-# `add` fills the local snapshots that `install` reads.
+# Plugins. The home marketplace is declared in the restored settings;
+# `add` fills the local snapshot that `install` reads.
 claude plugin marketplace add "$A"
-claude plugin marketplace add mar10tech/agent-kit
-for p in agents@home mar10@mar10tech s-kit@mar10tech; do claude plugin install "$p"; done
-codex plugin marketplace add mar10tech/agent-kit
-for p in agents@home mar10@mar10tech s-kit@mar10tech; do codex plugin add "$p"; done
+claude plugin install agents@home
+codex plugin add agents@home
 
 if [ "$brew_ok" = 0 ]; then
   echo 'Done, except brew bundle had failures (above). Fix them and re-run.' >&2
