@@ -1,0 +1,10 @@
+{
+  "gcp": {
+    "project": "marten-ai-tools",
+    "location": "us"
+  },
+  "model": "Gemini 4 Neon (High)",
+  "trustedWorkspaces": [
+    "/private/tmp/claude-501/-Users-stevenha--t3-scratch-2026-11-23-joey-invited-me-to-gemini-1726f901/d530fe9a-c949-4f96-bbb4-1cf6d844e1cc/scratchpad/agy/ws"
+  ]
+}
