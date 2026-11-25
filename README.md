@@ -15,8 +15,8 @@ Remove it when that stops, so the config only describes what is in use.
 Antigravity billing and the default model live in
 `~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged). `bin/agy-t3`
 wraps `/opt/homebrew/bin/agy` with `SSH_CLIENT` set so T3 Code's Antigravity
-provider stores refreshed OAuth tokens in a file instead of resetting the macOS
-Keychain ACL every hour.
+provider stores refreshed OAuth tokens in a file. Setup links the wrapper at
+`~/.t3/tools/antigravity-wrapper/agy`, using the executable name T3 expects.
 
 Slack: Claude Code uses its claude.ai connector. `agy` gets Slack's hosted MCP
 server from the plugin in `agy-plugins/slack`, backed by the internal Slack app

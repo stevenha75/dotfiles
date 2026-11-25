@@ -83,6 +83,9 @@ link "$A/.mcp.json" .gemini/config/mcp_config.json
 link "$A/hooks/antigravity.json" .gemini/config/hooks.json
 link "$A/skills" .gemini/config/skills
 
+# T3 validates the override by filename, so expose the wrapper as agy.
+link "$A/bin/agy-t3" .t3/tools/antigravity-wrapper/agy
+
 # App-written settings.
 printf '%s\n' "$APPS" | while read -r snap live; do
   [ -n "$snap" ] || continue
