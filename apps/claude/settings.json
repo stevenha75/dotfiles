@@ -1,0 +1,26 @@
+{
+  "enabledMcpjsonServers": [
+    "linear"
+  ],
+  "enabledPlugins": {
+    "agents@home": true,
+    "mar10@mar10tech": true,
+    "s-kit@mar10tech": true
+  },
+  "extraKnownMarketplaces": {
+    "home": {
+      "source": {
+        "source": "directory",
+        "path": "__HOME__/.agents"
+      }
+    },
+    "mar10tech": {
+      "source": {
+        "source": "github",
+        "repo": "mar10tech/agent-kit"
+      }
+    }
+  },
+  "outputStyle": "Concise",
+  "theme": "auto"
+}

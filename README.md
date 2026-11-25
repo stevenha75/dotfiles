@@ -50,8 +50,32 @@ Calendar, Drive, Docs, and Sheets on Gemini Enterprise need approved MCP
 endpoints and Google Workspace OAuth setup.
 
 `home/` holds hand-written dotfiles (zsh, git), each symlinked to the same
-path under `~` (e.g. `~/.zshrc` → `home/.zshrc`). App-written configs
-(`~/.claude/settings.json`, `~/.codex/config.toml`) stay unmanaged.
+path under `~` (e.g. `~/.zshrc` → `home/.zshrc`).
+
+`apps/` holds snapshots of app-written settings: Claude Code `settings.json`,
+agy `settings.json`, and T3 Code's settings and keybindings. Codex's
+`config.toml` isn't snapshotted because the ChatGPT app writes version-pinned
+paths into it. `setup.sh` sets only its plugins and `model_verbosity`. Apps rewrite these files, so they are copied, not linked. After
+changing settings on one Mac, run `./setup.sh save` (it refuses to save anything that looks like a credential),
+commit, then run `./setup.sh` on the other. Secrets never go in `apps/`: the agy Slack token
+(`~/.gemini/config/config.json`) and T3's `~/.t3/userdata/secrets` stay local.
+
+## New machine
+
+1. Install [Homebrew](https://brew.sh), then `brew install gh && gh auth login`
+   (log in to both accounts in `gh-accounts`; `gh auth login` again adds the second).
+2. `gh repo clone stevenha75/dotfiles ~/.agents`
+3. Quit T3 Code, then run `~/.agents/setup.sh` from Terminal. It installs the
+   `Brewfile`, oh-my-zsh, and rustup, links `home/`, `AGENTS.md`, `.mcp.json`
+   and the agy hooks and skills, restores `apps/`, and installs the
+   `agents@home`, `mar10@mar10tech`, and `s-kit@mar10tech` plugins in Claude
+   Code and Codex. Anything it replaces is kept as `<name>.pre-agents`.
+4. Sign in by hand: Claude Code, Codex, ChatGPT, `agy`, and T3 Code accounts;
+   Linear MCP OAuth in each tool; the claude.ai connectors (Slack, Gmail, etc.)
+   come with the Claude account.
+5. Store the Playwright extension token (see Browser), set up the agy Slack
+   plugin and T3's private agy profile (the Slack and T3 Code paragraphs above),
+   and re-trust the Codex hook if Codex asks (see below).
 
 `hooks/session-start.sh` runs at session start in Claude Code, Codex, and
 terminal `agy`. It refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
