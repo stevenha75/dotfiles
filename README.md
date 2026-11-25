@@ -8,14 +8,15 @@ Remove it when that stops, so the config only describes what is in use.
 | File               | Codex                                   | Claude Code                                | Antigravity CLI (`agy`)                          |
 |--------------------|-----------------------------------------|--------------------------------------------|--------------------------------------------------|
 | `AGENTS.md`        | `~/.codex/AGENTS.md` symlink (live)     | `~/.claude/CLAUDE.md` symlink (live)       | `~/.gemini/AGENTS.md` symlink (live)             |
+| `skills/`          | native `~/.agents/skills` (live)        | plugin `agents@home` (live)                | `~/.gemini/config/skills` symlink (live)         |
 | `.mcp.json`        | plugin `agents@home`, refreshed by hook | plugin `agents@home` (live)                | `~/.gemini/config/mcp_config.json` symlink (live) |
-| Session refresh    | `hooks/hooks.json` via `agents@home`      | `hooks/hooks.json` via `agents@home`         | `~/.gemini/config/hooks.json` → `hooks/antigravity.json` (terminal) |
+| Session refresh    | `hooks/hooks.json` via `agents@home`    | `hooks/hooks.json` via `agents@home`       | `~/.gemini/config/hooks.json` → `hooks/antigravity.json` (terminal) |
 
-`agy` has no plugin marketplace for agent-kit, so `~/.gemini/config/skills` links to
-Claude Code's checkout (`~/.claude/plugins/marketplaces/mar10tech/skills`).
-The terminal session hook runs the same refresh as Claude Code and Codex.
 Antigravity billing and the default model live in
-`~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged).
+`~/.gemini/antigravity-cli/settings.json` (app-written, unmanaged). `bin/agy-t3`
+wraps `/opt/homebrew/bin/agy` with `SSH_CLIENT` set so T3 Code's Antigravity
+provider stores refreshed OAuth tokens in a file. Setup links the wrapper at
+`~/.t3/tools/antigravity-wrapper/agy`, using the executable name T3 expects.
 
 Slack: Claude Code uses its claude.ai connector. `agy` gets Slack's hosted MCP
 server from the plugin in `agy-plugins/slack`, backed by the internal Slack app
@@ -66,29 +67,30 @@ commit, then run `./setup.sh` on the other. Secrets never go in `apps/`: the agy
    (log in to both accounts in `gh-accounts`; `gh auth login` again adds the second).
 2. `gh repo clone stevenha75/dotfiles ~/.agents`
 3. Quit T3 Code, then run `~/.agents/setup.sh` from Terminal. It installs the
-   `Brewfile`, oh-my-zsh, and rustup, links `home/`, `AGENTS.md`, `.mcp.json`
+   `Brewfile`, oh-my-zsh, and rustup, links `home/`, `AGENTS.md`, `.mcp.json`,
    and the agy hooks and skills, restores `apps/`, and installs the
-   `agents@home`, `mar10@mar10tech`, and `s-kit@mar10tech` plugins in Claude
-   Code and Codex. Anything it replaces is kept as `<name>.pre-agents`.
+   `agents@home` plugin in Claude Code and Codex. Anything it replaces is kept
+   as `<name>.pre-agents`.
 4. Sign in by hand: Claude Code, Codex, ChatGPT, `agy`, and T3 Code accounts;
    Linear MCP OAuth in each tool; the claude.ai connectors (Slack, Gmail, etc.)
-   come with the Claude account.
+   come with the Claude account. Sign in to Antigravity from T3 Code to create
+   its profile's local OAuth token.
 5. Store the Playwright extension token (see Browser), set up the agy Slack
    plugin and T3's private agy profile (the Slack and T3 Code paragraphs above),
    and re-trust the Codex hook if Codex asks (see below).
 
 `hooks/session-start.sh` runs at session start in Claude Code, Codex, and
-terminal `agy`. It refreshes Codex's copy of `agents@home` (picks up `.mcp.json` edits)
-and updates `mar10@mar10tech` (plus `s-kit@mar10tech` where it's installed) in
-Claude Code and Codex to agent-kit `main` in the background. The new plugin versions load on the next session.
+terminal `agy`. It refreshes Codex's copy of `agents@home` (picks up `.mcp.json`
+edits) in the background; changes load on the next session.
 
 Editing `hooks/hooks.json` changes its hash, so Codex asks for re-trust: run
 `codex` in a terminal → Review hooks → `t`.
 
-Plumbing: `.claude-plugin/` (Claude plugin + marketplace), `.codex-plugin/`
-(Codex plugin), `plugins/marketplace.json` (Codex auto-discovers it as `home`).
-Both plugin manifests point `skills` at an empty dir so skills don't double-load.
-Don't put secrets in `.mcp.json` (it's in git); reference env vars instead.
+Plumbing: `.claude-plugin/` (Claude plugin + marketplace, loads `skills/`),
+`.codex-plugin/` (Codex plugin, points `skills` at an empty dir so skills don't
+double-load with Codex's native `~/.agents/skills`), `plugins/marketplace.json`
+(Codex auto-discovers it as `home`). Don't put secrets in `.mcp.json` (it's in
+git); reference env vars instead.
 
 ## Browser (Playwright MCP)
 
@@ -111,9 +113,12 @@ owners use the active account (`gh auth switch`). Two scripts read it:
 Commit identity: `.gitconfig-mar10tech` applies to repos under
 `~/code/mar10tech/` or with a `mar10tech` remote.
 
-## Team skills
+## Skills
 
-tstack and other shared skills live in github.com/mar10tech/agent-kit, installed
-as plugin `mar10@mar10tech` in both tools (Claude shows them as `mar10:<skill>`).
-`disabled-skills/` holds personal skills that are turned off. Nothing loads
-personal skills right now; turning one on means wiring `skills/` back up.
+All personal and general workflow skills live in `skills/` (`slack-post`,
+`github-stacks`, and the `s-kit` skills; `skills/LICENSE-tstack` keeps upstream
+MIT attribution). Codex reads `~/.agents/skills` natively, Claude Code loads
+them via `agents@home`, and Antigravity reads them through the
+`~/.gemini/config/skills` symlink. `disabled-skills/` holds skills that are
+turned off. Company-specific Linear, infrastructure, and deployment skills
+come from the work marketplace and can be installed separately.

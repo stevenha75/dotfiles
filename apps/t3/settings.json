@@ -42,7 +42,7 @@
         "authMethod": "oauth-business",
         "gcpProject": "marten-ai-tools",
         "gcpLocation": "us",
-        "binaryPath": "/opt/homebrew/bin/agy"
+        "binaryPath": "__HOME__/.t3/tools/antigravity-wrapper/agy"
       }
     }
   }

@@ -1,0 +1,12 @@
+#!/bin/bash
+# Work around macOS Keychain XARA partition_id reset loop for Antigravity oauth-business:
+# antigravity CLI (zalando/go-keyring) saves refreshed OAuth tokens via
+# `/usr/bin/security add-generic-password -U`, which resets the Keychain item's XARA
+# partition_id to `apple-tool:` and invalidates T3 Code's "Always Allow" every ~hour.
+# Setting SSH_CLIENT trips antigravity's built-in sshDetector -> file-based token storage
+# (antigravity-oauth-token), which T3 Code's makeAntigravityUsageProbe reads natively
+# without touching Keychain. SSH_CLIENT (unlike SSH_CONNECTION/SSH_TTY) does not affect `t3` CLI.
+# Use the explicit setting in newer agy, and retain the SSH fallback for 1.5.14.
+export AGY_CLI_FORCE_FILE_TOKEN_STORAGE=1
+export SSH_CLIENT="${SSH_CLIENT:-127.0.0.1 0 0}"
+exec /opt/homebrew/bin/agy "$@"
